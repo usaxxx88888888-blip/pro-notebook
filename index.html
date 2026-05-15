@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Блокнот">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Pro Блокнот</title>
+<style>
+:root{
+  --bg:#0b1020; --panel:#111827; --panel2:#172033; --text:#f8fafc;
+  --muted:#a8b3c7; --accent:#60a5fa; --danger:#fb7185; --ok:#34d399;
+  --border:rgba(255,255,255,.12); --shadow:0 18px 50px rgba(0,0,0,.35); --radius:18px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:linear-gradient(145deg,#080b14,#111827 45%,#07111f);
+  color:var(--text);
+  min-height:100vh;
+  padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+}
+.app{max-width:980px;margin:0 auto;display:grid;grid-template-columns:330px 1fr;gap:14px;padding:12px 0}
+.card{background:rgba(17,24,39,.9);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;backdrop-filter: blur(14px)}
+.sidebar{height:calc(100vh - 24px);min-height:640px;display:flex;flex-direction:column}
+.header{padding:18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(96,165,250,.18),rgba(52,211,153,.08))}
+h1{font-size:23px;margin:0 0 5px;letter-spacing:.2px}.small{font-size:12px;color:var(--muted);line-height:1.35}
+.controls{padding:12px;display:grid;gap:10px;border-bottom:1px solid var(--border)}.row{display:flex;gap:8px;align-items:center}
+input,select,textarea{
+  width:100%;border:1px solid var(--border);border-radius:14px;padding:12px 13px;color:var(--text);
+  background:#0f172a;outline:none;font-size:15px;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(96,165,250,.7);box-shadow:0 0 0 3px rgba(96,165,250,.16)}
+button{
+  border:0;border-radius:14px;padding:12px 14px;color:white;background:#2563eb;font-size:15px;
+  font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+button.secondary{background:#273348} button.ok{background:#059669} button.danger{background:#be123c}
+button.ghost{background:transparent;border:1px solid var(--border)} button:active{transform:translateY(1px)}
+.notes{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:9px}
+.note-item{border:1px solid var(--border);background:rgba(15,23,42,.75);border-radius:16px;padding:12px}
+.note-item.active{border-color:rgba(96,165,250,.85);background:rgba(37,99,235,.18)}
+.note-title{font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-preview{font-size:13px;color:var(--muted);line-height:1.35;max-height:38px;overflow:hidden}
+.note-meta{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:11px;color:#8ea0bc}
+.editor{min-height:calc(100vh - 24px);display:flex;flex-direction:column}
+.editor-top{padding:12px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 160px;gap:10px}
+.toolbar{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+.toolbar button{padding:9px 11px;border-radius:12px;font-size:14px}
+.content-wrap{padding:12px;display:flex;flex-direction:column;gap:10px;flex:1}
+#editorArea{
+  flex:1;min-height:420px;border:1px solid var(--border);border-radius:18px;padding:16px;background:#0f172a;
+  color:var(--text);outline:none;line-height:1.55;font-size:17px;overflow:auto;white-space:pre-wrap;
+}
+#editorArea:focus{border-color:rgba(96,165,250,.7);box-shadow:0 0 0 3px rgba(96,165,250,.16)}
+.status{padding:10px 14px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:10px}
+.export-grid{padding:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.install-box{
+  margin:12px;padding:12px;border:1px dashed rgba(96,165,250,.55);border-radius:14px;
+  color:#dbeafe;background:rgba(37,99,235,.12);font-size:13px;line-height:1.45
+}
+.hidden{display:none}
+@media(max-width:760px){
+  body{padding-left:8px;padding-right:8px}
+  .app{display:flex;flex-direction:column;padding:8px 0}
+  .sidebar{height:auto;min-height:0}.notes{max-height:260px}.editor{min-height:620px}
+  .editor-top{grid-template-columns:1fr}.export-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media print{
+  body{background:white;color:black;padding:0}.sidebar,.toolbar,.export-grid,.status,.install-box{display:none!important}
+  .app{display:block;max-width:none;padding:0}.card{box-shadow:none;border:0;background:white;color:black}
+  .editor-top{display:block;border:0;padding:0}
+  #titleInput,#categoryInput{border:0;background:white;color:black;font-size:22px;font-weight:700;padding:0;margin:0 0 12px}
+  #editorArea{border:0;background:white;color:black;padding:0;font-size:15px;min-height:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="card sidebar">
+    <div class="header">
+      <h1>Pro Блокнот</h1>
+      <div class="small">Личное приложение-блокнот для iPhone: записи, поиск, категории, Word, PDF, картинка и отправка.</div>
+    </div>
+    <div id="installBox" class="install-box">
+      Чтобы установить как приложение: откройте эту страницу в Safari → нажмите «Поделиться» → «На экран Домой».
+    </div>
+    <div class="controls">
+      <button onclick="newNote()">＋ Новая запись</button>
+      <input id="searchInput" placeholder="Поиск по записям..." oninput="renderNotes()">
+      <div class="row">
+        <button class="secondary" onclick="exportBackup()">Бэкап</button>
+        <button class="secondary" onclick="document.getElementById('importFile').click()">Импорт</button>
+        <input id="importFile" class="hidden" type="file" accept=".json,application/json" onchange="importBackup(event)">
+      </div>
+    </div>
+    <div id="notesList" class="notes"></div>
+  </section>
+
+  <main class="card editor">
+    <div class="editor-top">
+      <input id="titleInput" placeholder="Название записи" oninput="saveCurrent()">
+      <input id="categoryInput" placeholder="Категория / тема" oninput="saveCurrent()">
+    </div>
+    <div class="toolbar">
+      <button class="ghost" onclick="formatText('bold')"><b>B</b></button>
+      <button class="ghost" onclick="formatText('italic')"><i>I</i></button>
+      <button class="ghost" onclick="formatText('insertUnorderedList')">• список</button>
+      <button class="ghost" onclick="formatText('insertOrderedList')">1. список</button>
+      <button class="ghost" onclick="insertDate()">Дата</button>
+      <button class="ghost" onclick="clearFormatting()">Очистить стиль</button>
+    </div>
+    <div class="content-wrap">
+      <div id="editorArea" contenteditable="true" oninput="saveCurrent()"></div>
+    </div>
+    <div class="export-grid">
+      <button class="ok" onclick="shareNote()">Поделиться</button>
+      <button onclick="exportDoc()">Word</button>
+      <button onclick="exportPng()">Картинка</button>
+      <button onclick="window.print()">PDF/Печать</button>
+      <button class="secondary" onclick="exportTxt()">TXT</button>
+      <button class="secondary" onclick="copyText()">Копировать</button>
+      <button class="secondary" onclick="duplicateNote()">Дубликат</button>
+      <button class="danger" onclick="deleteNote()">Удалить</button>
+    </div>
+    <div class="status">
+      <span id="saveStatus">Готово</span>
+      <span id="countStatus">0 слов</span>
+    </div>
+  </main>
+</div>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+}
+if (window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches) {
+  const box = document.getElementById("installBox");
+  if (box) box.style.display = "none";
+}
+
+const KEY = "proNotebookNotes.v2";
+let notes = [];
+let currentId = null;
+let saveTimer = null;
+function uid(){ return "n" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function now(){ return new Date().toISOString(); }
+function niceDate(iso){ try { return new Date(iso).toLocaleString("ru-RU", {dateStyle:"short", timeStyle:"short"}); } catch(e){ return iso; } }
+function stripHtml(html){ const div = document.createElement("div"); div.innerHTML = html || ""; return (div.innerText || "").trim(); }
+function safeFileName(s){ return (s || "Запись").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim().slice(0,80) || "Запись"; }
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function load(){
+  try{ notes = JSON.parse(localStorage.getItem(KEY) || "[]"); }catch(e){ notes=[]; }
+  if(!notes.length){
+    const id = uid();
+    notes.push({id, title:"Моя первая запись", category:"Личное",
+      html:"Это уже версия под установку на экран iPhone как приложение.<br><br>Откройте страницу в Safari → Поделиться → На экран Домой.",
+      createdAt:now(), updatedAt:now()});
+    currentId = id; persist();
+  } else currentId = notes[0].id;
+  renderNotes(); openNote(currentId);
+}
+function persist(){ localStorage.setItem(KEY, JSON.stringify(notes)); }
+function current(){ return notes.find(n=>n.id===currentId); }
+function renderNotes(){
+  const q = document.getElementById("searchInput").value.toLowerCase().trim();
+  const list = document.getElementById("notesList");
+  let filtered = notes.slice().sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
+  if(q){ filtered = filtered.filter(n => (n.title||"").toLowerCase().includes(q) || (n.category||"").toLowerCase().includes(q) || stripHtml(n.html).toLowerCase().includes(q)); }
+  list.innerHTML = filtered.map(n => `
+    <div class="note-item ${n.id===currentId?'active':''}" onclick="openNote('${n.id}')">
+      <div class="note-title">${escapeHtml(n.title || "Без названия")}</div>
+      <div class="note-preview">${escapeHtml(stripHtml(n.html).slice(0,120) || "Пустая запись")}</div>
+      <div class="note-meta"><span>${escapeHtml(n.category || "Без категории")}</span><span>${niceDate(n.updatedAt)}</span></div>
+    </div>`).join("") || `<div class="small" style="padding:12px">Ничего не найдено.</div>`;
+}
+function openNote(id){
+  currentId = id; const n = current(); if(!n) return;
+  document.getElementById("titleInput").value = n.title || "";
+  document.getElementById("categoryInput").value = n.category || "";
+  document.getElementById("editorArea").innerHTML = n.html || "";
+  updateCount(); renderNotes();
+}
+function saveCurrent(){
+  const n = current(); if(!n) return;
+  n.title = document.getElementById("titleInput").value;
+  n.category = document.getElementById("categoryInput").value;
+  n.html = document.getElementById("editorArea").innerHTML;
+  n.updatedAt = now(); persist(); updateCount();
+  document.getElementById("saveStatus").textContent = "Сохранено: " + niceDate(n.updatedAt);
+  clearTimeout(saveTimer); saveTimer = setTimeout(renderNotes, 250);
+}
+function updateCount(){
+  const text = stripHtml(document.getElementById("editorArea").innerHTML);
+  const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  document.getElementById("countStatus").textContent = words + " слов, " + text.length + " знаков";
+}
+function newNote(){ const id=uid(); notes.unshift({id,title:"Новая запись",category:"",html:"",createdAt:now(),updatedAt:now()}); currentId=id; persist(); renderNotes(); openNote(id); document.getElementById("titleInput").focus(); }
+function duplicateNote(){ const n=current(); if(!n) return; const copy={...n,id:uid(),title:(n.title||"Запись")+" — копия",createdAt:now(),updatedAt:now()}; notes.unshift(copy); currentId=copy.id; persist(); openNote(currentId); }
+function deleteNote(){ if(!currentId) return; if(!confirm("Удалить эту запись?")) return; notes=notes.filter(n=>n.id!==currentId); if(!notes.length){currentId=null; newNote(); return;} currentId=notes[0].id; persist(); openNote(currentId); }
+function formatText(cmd){ document.execCommand(cmd,false,null); saveCurrent(); document.getElementById("editorArea").focus(); }
+function clearFormatting(){ document.execCommand("removeFormat",false,null); saveCurrent(); }
+function insertDate(){ const d=new Date().toLocaleString("ru-RU",{dateStyle:"long",timeStyle:"short"}); document.execCommand("insertText",false,d); saveCurrent(); }
+function blobDownload(blob, filename){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000); }
+function exportTxt(){ const n=current(); if(!n) return; const text=(n.title||"Без названия")+"\n"+(n.category?("Категория: "+n.category+"\n"):"")+"\n"+stripHtml(n.html); blobDownload(new Blob([text],{type:"text/plain;charset=utf-8"}), safeFileName(n.title)+".txt"); }
+function exportDoc(){ const n=current(); if(!n) return; const doc=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${escapeHtml(n.title)}</title></head><body style="font-family:Arial,sans-serif;line-height:1.5"><h1>${escapeHtml(n.title||"Без названия")}</h1>${n.category?`<p><b>Категория:</b> ${escapeHtml(n.category)}</p>`:""}<p><b>Дата:</b> ${niceDate(n.updatedAt)}</p><hr><div>${n.html||""}</div></body></html>`; blobDownload(new Blob([doc],{type:"application/msword;charset=utf-8"}), safeFileName(n.title)+".doc"); }
+function exportBackup(){ blobDownload(new Blob([JSON.stringify(notes,null,2)],{type:"application/json;charset=utf-8"}), "Pro-Notebook-backup-"+new Date().toISOString().slice(0,10)+".json"); }
+function importBackup(e){ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ const imported=JSON.parse(reader.result); if(!Array.isArray(imported)) throw new Error("bad"); notes=imported.map(n=>({id:n.id||uid(),title:n.title||"Без названия",category:n.category||"",html:n.html||"",createdAt:n.createdAt||now(),updatedAt:n.updatedAt||now()})); currentId=notes[0]?.id||null; persist(); renderNotes(); if(currentId) openNote(currentId); alert("Импорт завершён."); }catch(err){ alert("Не удалось импортировать файл."); } }; reader.readAsText(file); }
+async function copyText(){ const n=current(); if(!n) return; const text=(n.title||"Без названия")+"\n\n"+stripHtml(n.html); try{ await navigator.clipboard.writeText(text); alert("Скопировано."); }catch(e){ alert("Не удалось скопировать автоматически."); } }
+async function shareNote(){ const n=current(); if(!n) return; const text=(n.title||"Без названия")+"\n\n"+stripHtml(n.html); const file=new File([text], safeFileName(n.title)+".txt", {type:"text/plain"}); try{ if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({title:n.title||"Запись",text,files:[file]}); } else if(navigator.share){ await navigator.share({title:n.title||"Запись",text}); } else { exportTxt(); alert("Файл сохранён. Теперь отправьте его через приложение Файлы."); } }catch(e){} }
+function exportPng(){
+  const n=current(); if(!n) return; const text=stripHtml(n.html)||"Пустая запись"; const title=n.title||"Без названия"; const category=n.category?("Категория: "+n.category):"";
+  const canvas=document.createElement("canvas"); const ctx=canvas.getContext("2d"); const W=1200,pad=70,lineH=36; canvas.width=W;
+  function wrap(str,maxWidth,font){ ctx.font=font; const words=str.replace(/\n/g," \n ").split(/\s+/); const lines=[]; let line=""; for(const w of words){ if(w==="\n"){lines.push(line); line=""; continue;} const test=line?line+" "+w:w; if(ctx.measureText(test).width>maxWidth&&line){lines.push(line); line=w;} else line=test;} if(line) lines.push(line); return lines; }
+  const titleLines=wrap(title,W-pad*2,"bold 42px Arial"); const bodyLines=wrap(text,W-pad*2,"28px Arial"); const catLines=category?wrap(category,W-pad*2,"24px Arial"):[];
+  const H=Math.min(6000,pad*2+titleLines.length*52+catLines.length*34+50+bodyLines.length*lineH); canvas.height=H;
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#111827"; let y=pad; ctx.font="bold 42px Arial";
+  for(const l of titleLines){ctx.fillText(l,pad,y); y+=52;} if(catLines.length){ctx.fillStyle="#4b5563"; ctx.font="24px Arial"; for(const l of catLines){ctx.fillText(l,pad,y); y+=34;}}
+  ctx.strokeStyle="#d1d5db"; ctx.beginPath(); ctx.moveTo(pad,y+12); ctx.lineTo(W-pad,y+12); ctx.stroke(); y+=58; ctx.fillStyle="#111827"; ctx.font="28px Arial";
+  for(const l of bodyLines){ if(y>H-pad) break; ctx.fillText(l,pad,y); y+=lineH; }
+  canvas.toBlob(blob=>blobDownload(blob,safeFileName(title)+".png"));
+}
+load();
+</script>
+</body>
+</html>
