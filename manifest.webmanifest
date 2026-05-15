@@ -1,8 +1,9 @@
 {
   "name": "Pro Блокнот",
   "short_name": "Блокнот",
-  "description": "Личный профессиональный блокнот для iPhone: записи, поиск, экспорт Word, PDF, PNG и отправка.",
+  "description": "Личный блокнот для iPhone: записи, поиск, экспорт Word, PDF, PNG и отправка.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#111827",
